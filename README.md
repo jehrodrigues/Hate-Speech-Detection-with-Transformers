@@ -30,11 +30,10 @@ $ pip install torch --extra-index-url https://download.pytorch.org/whl/cpu
 Pre-process external files to generate training, development and test sets.
 
 ```console
-$ python -m src.data.make_dataset <dataset_file> <testset_file>
+$ python -m src.data.make_dataset <dataset_file>
 ```
 Parameters:
 * **dataset_file**: hate speech dataset (.csv) + binary labels (hate, not-hate), e.g. "DynamicallyHateDataset.csv".
-* **testset_file**: hate speech golden set (.csv) + binary labels (hate, not-hate), e.g. "HateCheck.csv".
 
 The files must be inside:
 ```console
