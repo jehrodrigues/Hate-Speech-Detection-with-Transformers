@@ -80,7 +80,7 @@ target/
 #/data/
 
 # exclude models from source control by default
-/model/
+#/model/
 
 # Mac OS-specific storage files
 .DS_Store
