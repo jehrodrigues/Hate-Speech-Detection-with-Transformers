@@ -46,7 +46,7 @@ $./data/processed/
 ```
 
 ## Train
-Fine-tune pre-trained transformer models.
+Fine-tune pre-trained transformer models on training and development data.
 
 ```console
 $ python -m src.models.train_model <model_name>
@@ -61,7 +61,7 @@ $./model/
 
 ## Evaluation
 
-Evaluate transformer models.
+Evaluate transformer models on test data.
 
 ```console
 $ python -m src.models.evaluate_model <model_name>
