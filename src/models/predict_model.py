@@ -21,10 +21,8 @@ class TransformerPredict:
 
     def predict(self, sentence: str) -> str:
         """Predict the binary class of a sentence using a Transformer model
-
         Args:
             sentence (str): sentence
-
         Returns:
             binary class (str): hate (class 0) | not-hate (class 1)
         """

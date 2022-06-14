@@ -6,8 +6,8 @@ Script used to preprocess datasets files.
 
 def convert_labels(labels):
     """Convert labels into integer format."""
-    labels = list(set(labels))
-    return {label: idx for idx, label in enumerate(labels)}
+    # to do: automatize
+    return {'nothate': 0, 'hate': 1}
 
 
 class TextPreprocessing(object):

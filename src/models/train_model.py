@@ -12,8 +12,6 @@ from src.data.read_dataset import get_data
 from src.data.text_preprocessing import TextPreprocessing, convert_labels
 from transformers import TrainingArguments, Trainer
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
-#from transformers import BertTokenizer, BertForSequenceClassification
-#from transformers import DistilBertTokenizer, DistilBertForSequenceClassification
 from src.models.evaluate_model import compute_metrics
 
 project_dir = Path(__file__).resolve().parents[2]

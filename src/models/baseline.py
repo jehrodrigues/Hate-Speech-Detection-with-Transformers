@@ -1,67 +1,79 @@
-import numpy as np
-import matplotlib.pyplot as plt
+import logging
+import argparse
 from pathlib import Path
 from src.data.read_dataset import get_data
 from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
 from sklearn.linear_model import LogisticRegression
 from sklearn.pipeline import Pipeline
-from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
+from src.data.text_preprocessing import convert_labels
 
 project_dir = Path(__file__).resolve().parents[2]
 
 
-class BaselineTraining:
+class BaselinePredict:
     """
     Provides a classic baseline for comparison
     Usage:
-    python -m src.models.baseline
+    python -m src.models.baseline <sentence>
     """
 
-    def __init__(self, algorithm="logistic_regression"):
-        self._algorithm_name = algorithm
+    def __init__(self, model_name):
+        self._model = self.train(model_name)
 
-    def train(self) -> str:
+    def predict(self, sentence: str):
+        """Predict the binary class of a sentence using a Logistic Regression
+        Args:
+            sentence (str): sentence
+        Returns:
+            binary class (str): hate (class 0) | not-hate (class 1)
+        """
+        # predict
+        test_proba = self._model.predict_proba([sentence])
+        test_pred = test_proba.argmax(1).item()
+
+        return test_proba[0], test_pred
+
+    def train(self, model) -> str:
         """Train a logistic regression method"""
         try:
             # pipeline
             pipeline = Pipeline([
                 ('vect', CountVectorizer()),
                 ('tfidf', TfidfTransformer()),
-                ('lr', LogisticRegression(solver="sag"))  # lbfgs
+                ('lr', LogisticRegression(solver="sag"))
             ])
 
             # data
-            df_train, df_dev, df_test = get_data()
+            df_train, _, _ = get_data()
 
             # text
             train_texts = df_train['text']
-            dev_texts = df_test['text']
-            test_text = df_test['text']
 
             # labels
-            labels = list(set(df_train['label']))
-            label2int = {label: idx for idx, label in enumerate(labels)}
+            label2int = convert_labels(df_train["label"])
             train_labels = df_train['label'].apply(lambda x: label2int[x])
-            dev_labels = df_dev['label'].apply(lambda x: label2int[x])
-            test_labels = df_test['label'].apply(lambda x: label2int[x])
 
             # fit
             pipeline.fit(train_texts, train_labels)
 
-            # predict
-            test_pred = pipeline.predict(test_text)
+            return pipeline
 
-            # evaluate
-            baseline_accuracy = np.mean(test_pred == test_labels)
-            print("Baseline accuracy:", baseline_accuracy)
-
-            cm = confusion_matrix(test_labels, test_pred)
-
-            disp = ConfusionMatrixDisplay(confusion_matrix=cm)
-            disp.plot()
-            plt.show()
         except Exception:
-            logging.error(f'directory or model is invalid or does not exist: {self._algorithm_name}')
+            logging.error(f'directory or model is invalid or does not exist: {self._model_name}')
+
 
 if __name__ == '__main__':
-    BaselineTraining().train()
+    log_fmt = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    logging.basicConfig(level=logging.INFO, format=log_fmt)
+
+    # Parser descriptors
+    parser = argparse.ArgumentParser(
+        description='''Script used to predict a binary class.''')
+
+    parser.add_argument('sentence',
+                        type=str,
+                        help='Sentence to be classified as hateful or non-hateful, e.g. "I hate women"')
+
+    args = parser.parse_args()
+
+    logging.info(args.sentence + " - " + str(BaselinePredict("LogisticRegression").predict(args.sentence)))

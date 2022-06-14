@@ -6,7 +6,6 @@ import pandas as pd
 import logging
 from typing import Tuple
 from pathlib import Path
-from sklearn.model_selection import train_test_split
 
 project_dir = Path(__file__).resolve().parents[2]
 
