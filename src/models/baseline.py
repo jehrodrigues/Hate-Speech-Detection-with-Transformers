@@ -22,45 +22,46 @@ class BaselineTraining:
 
     def train(self) -> str:
         """Train a logistic regression method"""
+        try:
+            # pipeline
+            pipeline = Pipeline([
+                ('vect', CountVectorizer()),
+                ('tfidf', TfidfTransformer()),
+                ('lr', LogisticRegression(solver="sag"))  # lbfgs
+            ])
 
-        # pipeline
-        pipeline = Pipeline([
-            ('vect', CountVectorizer()),
-            ('tfidf', TfidfTransformer()),
-            ('lr', LogisticRegression(solver="sag"))  # lbfgs
-        ])
+            # data
+            df_train, df_dev, df_test = get_data()
 
-        # data
-        df_train, df_dev, df_test = get_data()
+            # text
+            train_texts = df_train['text']
+            dev_texts = df_test['text']
+            test_text = df_test['text']
 
-        # text
-        train_texts = df_train['text']
-        dev_texts = df_test['text']
-        test_text = df_test['text']
+            # labels
+            labels = list(set(df_train['label']))
+            label2int = {label: idx for idx, label in enumerate(labels)}
+            train_labels = df_train['label'].apply(lambda x: label2int[x])
+            dev_labels = df_dev['label'].apply(lambda x: label2int[x])
+            test_labels = df_test['label'].apply(lambda x: label2int[x])
 
-        # labels
-        labels = list(set(df_train['label']))
-        label2int = {label: idx for idx, label in enumerate(labels)}
-        train_labels = df_train['label'].apply(lambda x: label2int[x])
-        dev_labels = df_dev['label'].apply(lambda x: label2int[x])
-        test_labels = df_test['label'].apply(lambda x: label2int[x])
+            # fit
+            pipeline.fit(train_texts, train_labels)
 
-        # fit
-        pipeline.fit(train_texts, train_labels)
+            # predict
+            test_pred = pipeline.predict(test_text)
 
-        # predict
-        test_pred = pipeline.predict(test_text)
+            # evaluate
+            baseline_accuracy = np.mean(test_pred == test_labels)
+            print("Baseline accuracy:", baseline_accuracy)
 
-        # evaluate
-        baseline_accuracy = np.mean(test_pred == test_labels)
-        print("Baseline accuracy:", baseline_accuracy)
+            cm = confusion_matrix(test_labels, test_pred)
 
-        cm = confusion_matrix(test_labels, test_pred)
-
-        disp = ConfusionMatrixDisplay(confusion_matrix=cm)
-        disp.plot()
-        plt.show()
-
+            disp = ConfusionMatrixDisplay(confusion_matrix=cm)
+            disp.plot()
+            plt.show()
+        except Exception:
+            logging.error(f'directory or model is invalid or does not exist: {self._algorithm_name}')
 
 if __name__ == '__main__':
     BaselineTraining().train()

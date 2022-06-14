@@ -29,48 +29,51 @@ class TransformerFineTuning:
 
     def train(self) -> None:
         """Train Transformer models"""
+        try:
+            # Load data
+            df_train, df_dev, _ = get_data()
 
-        # Load data
-        df_train, df_dev, _ = get_data()
+            # Convert labels to int
+            label2int = convert_labels(df_train["label"])
+            df_train["label"] = df_train["label"].apply(lambda x: label2int[x])
+            df_dev["label"] = df_dev["label"].apply(lambda x: label2int[x])
 
-        # Convert labels to int
-        label2int = convert_labels(df_train["label"])
-        df_train["label"] = df_train["label"].apply(lambda x: label2int[x])
-        df_dev["label"] = df_dev["label"].apply(lambda x: label2int[x])
+            # Create torch dataset
+            hf_train = Dataset.from_pandas(df_train)
+            hf_dev = Dataset.from_pandas(df_dev)
 
-        # Create torch dataset
-        hf_train = Dataset.from_pandas(df_train)
-        hf_dev = Dataset.from_pandas(df_dev)
+            # Perform tokenization
+            tokenized_train = hf_train.map(TextPreprocessing(self._tokenizer).tokenize_text, batched=True)
+            tokenized_dev = hf_dev.map(TextPreprocessing(self._tokenizer).tokenize_text, batched=True)
 
-        # Perform tokenization
-        tokenized_train = hf_train.map(TextPreprocessing(self._tokenizer).tokenize_text, batched=True)
-        tokenized_dev = hf_dev.map(TextPreprocessing(self._tokenizer).tokenize_text, batched=True)
+            # Define training arguments
+            training_args = TrainingArguments(
+                output_dir=project_dir / "model",
+                evaluation_strategy="epoch",
+                save_strategy="epoch",
+                learning_rate=2e-5,
+                per_device_train_batch_size=16,
+                per_device_eval_batch_size=16,
+                num_train_epochs=5,
+                weight_decay=0.01,
+                load_best_model_at_end=True,
+            )
 
-        # Define training arguments
-        training_args = TrainingArguments(
-            output_dir=project_dir / "model",
-            evaluation_strategy="epoch",
-            save_strategy="epoch",
-            learning_rate=2e-5,
-            per_device_train_batch_size=16,
-            per_device_eval_batch_size=16,
-            num_train_epochs=5,
-            weight_decay=0.01,
-            load_best_model_at_end=True,
-        )
+            # Define trainer object
+            trainer = Trainer(
+                model=self._model_name,
+                args=training_args,
+                train_dataset=tokenized_train,
+                eval_dataset=tokenized_dev,
+                tokenizer=self._tokenizer,
+                compute_metrics=compute_metrics,
+            )
 
-        # Define trainer object
-        trainer = Trainer(
-            model=self._model_name,
-            args=training_args,
-            train_dataset=tokenized_train,
-            eval_dataset=tokenized_dev,
-            tokenizer=self._tokenizer,
-            compute_metrics=compute_metrics,
-        )
+            # Make training
+            trainer.train()
 
-        # Make training
-        trainer.train()
+        except Exception:
+            logging.error(f'directory or model is invalid or does not exist: {self._model_name}')
 
 
 if __name__ == '__main__':

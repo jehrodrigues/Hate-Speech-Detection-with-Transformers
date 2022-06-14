@@ -19,35 +19,39 @@ def create_train_test_sets(dataset_file: str) -> None:
     param dataset_file: Data to be split
     """
     path = project_dir / 'data' / 'processed'
-    df_dataset = pd.read_csv(dataset_file, delimiter=",",
-                             usecols=['text', 'label', 'split'],
-                             header=0, encoding='utf-8', engine='python')
+    if path.exists():
+        try:
+            df_dataset = pd.read_csv(dataset_file, delimiter=",",
+                                     usecols=['text', 'label', 'split'],
+                                     header=0, encoding='utf-8', engine='python')
 
-    # split into train, dev and test
-    df_train = df_dataset[df_dataset['split'] == 'train']
-    df_dev = df_dataset[df_dataset['split'] == 'dev']
-    df_test = df_dataset[df_dataset['split'] == 'test']
+            # split into train, dev and test
+            df_train = df_dataset[df_dataset['split'] == 'train']
+            df_dev = df_dataset[df_dataset['split'] == 'dev']
+            df_test = df_dataset[df_dataset['split'] == 'test']
 
-    # Resume
-    logging.info('\ntrain-------------------------------------------------------------')
-    logging.info(df_train.shape)
-    logging.info('label     %')
-    logging.info(f" {round(df_train.groupby('label')['text'].count() * 100 / df_train.shape[0], 2)}")
+            # Resume
+            logging.info('\ntrain-------------------------------------------------------------')
+            logging.info(df_train.shape)
+            logging.info('label     %')
+            logging.info(f" {round(df_train.groupby('label')['text'].count() * 100 / df_train.shape[0], 2)}")
 
-    logging.info('\ndev-------------------------------------------------------------')
-    logging.info(df_dev.shape)
-    logging.info('label     %')
-    logging.info(f" {round(df_dev.groupby('label')['text'].count() * 100 / df_dev.shape[0], 2)}")
+            logging.info('\ndev-------------------------------------------------------------')
+            logging.info(df_dev.shape)
+            logging.info('label     %')
+            logging.info(f" {round(df_dev.groupby('label')['text'].count() * 100 / df_dev.shape[0], 2)}")
 
-    logging.info('\ntest-------------------------------------------------------------')
-    logging.info(df_test.shape)
-    logging.info('label     %')
-    logging.info(f" {round(df_test.groupby('label')['text'].count() * 100 / df_test.shape[0], 2)}")
+            logging.info('\ntest-------------------------------------------------------------')
+            logging.info(df_test.shape)
+            logging.info('label     %')
+            logging.info(f" {round(df_test.groupby('label')['text'].count() * 100 / df_test.shape[0], 2)}")
 
-    # Save files
-    df_train.to_csv(path / 'train.csv', index=False)
-    df_dev.to_csv(path / 'dev.csv', index=False)
-    df_test.to_csv(path / 'test.csv', index=False)
+            # Save files
+            df_train.to_csv(path / 'train.csv', index=False)
+            df_dev.to_csv(path / 'dev.csv', index=False)
+            df_test.to_csv(path / 'test.csv', index=False)
+        except pd.errors.EmptyDataError:
+            logging.error(f'directory or file is invalid or does not exist: {dataset_file}')
 
 
 if __name__ == '__main__':
