@@ -1,6 +1,6 @@
 # Hate Speech Detection with Transformers
 
-This repo aims to perform the textual classification of sentences into hateful or non-hateful text. It fine-tunes a pre-trained transformer model on the Dynamically Generated Hate dataset and evaluates on the HateCheck benchmark.
+This repo aims to perform the textual classification of sentences into hateful or non-hateful text. It fine-tunes a pre-trained transformer model on the Dynamically Generated Hate dataset (https://arxiv.org/abs/2012.15761) and evaluates on the HateCheck benchmark (https://arxiv.org/abs/2012.15606).
 
 ---
 
